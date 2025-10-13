@@ -1,0 +1,28 @@
+name: Update SL File
+
+on:
+  repository_dispatch:
+    types: [update_sl_file]
+
+jobs:
+  update-file:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Update SL file
+        run: |
+          echo "Обновляем файл ${{ github.event.client_payload.file_path }}"
+          echo "${{ github.event.client_payload.file_content }}" | base64 --decode > "${{ github.event.client_payload.file_path }}"
+          echo "Файл успешно обновлен!"
+          
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add "${{ github.event.client_payload.file_path }}"
+          git commit -m "Update ${{ github.event.client_payload.file_path }}"
+          git push
