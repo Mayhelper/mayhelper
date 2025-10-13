@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Введите код ТТ</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            width: 100%;
+            padding: 5%;
+        }
+        
+        h1 {
+            color: #000;
+            text-align: left;
+            margin-bottom: 5%;
+            font-size: 1.5em;
+            font-weight: 600;
+        }
+        
+        .input-group {
+            width: 100%;
+            margin-bottom: 5%;
+        }
+        
+        input {
+            width: 100%;
+            padding: 4%;
+            border: 0.2em solid #d32f2f;
+            border-radius: 0.5em;
+            font-size: 1em;
+            background: white;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #b71c1c;
+        }
+        
+        .btn-group {
+            width: 100%;
+            display: flex;
+            gap: 4%;
+            margin-bottom: 5%;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 4%;
+            border: none;
+            border-radius: 0.5em;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            min-width: 45%;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #ff6b6b, #d32f2f);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #d32f2f, #b71c1c);
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: #d32f2f;
+            border: 0.2em solid #d32f2f;
+        }
+        
+        .btn-secondary:hover {
+            background: #d32f2f;
+            color: white;
+        }
+        
+        .status {
+            width: 100%;
+            text-align: center;
+            padding: 3%;
+            margin: 4% 0;
+            border-radius: 0.4em;
+            font-weight: 500;
+        }
+        
+        .loading {
+            background: #ffebee;
+            color: #d32f2f;
+        }
+        
+        .error {
+            background: #ffebee;
+            color: #d32f2f;
+        }
+        
+        .success {
+            background: #f1f8e9;
+            color: #2e7d32;
+        }
+        
+        .table-container {
+            width: 100%;
+            margin-top: 5%;
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 0.5em;
+            border: 0.2em solid #d32f2f;
+            margin-bottom: 5%;
+        }
+        
+        th, td {
+            padding: 3%;
+            text-align: left;
+            border-bottom: 0.1em solid #e0e0e0;
+            color: #000;
+            font-size: 0.9em;
+        }
+        
+        th {
+            background: #d32f2f;
+            color: white;
+            font-weight: 600;
+        }
+        
+        tr:hover {
+            background-color: #ffebee;
+        }
+        
+        tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .point-info {
+            background: #f8f9fa;
+            padding: 4%;
+            border-radius: 0.5em;
+            margin-bottom: 4%;
+            border-left: 0.4em solid #4CAF50;
+        }
+
+        .point-info h4 {
+            color: #2e7d32;
+            margin-bottom: 2%;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .debug-info {
+            background: #e3f2fd;
+            padding: 3%;
+            border-radius: 0.5em;
+            margin: 3% 0;
+            font-size: 0.9em;
+            color: #1565c0;
+        }
+
+        .section-header {
+            background: #d32f2f;
+            color: white;
+            padding: 3%;
+            border-radius: 0.5em;
+            margin: 4% 0 2% 0;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .metric-table {
+            width: 100%;
+            margin-bottom: 3%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 0.5em;
+            border: 0.1em solid #ddd;
+        }
+
+        .metric-table th {
+            background: #f5f5f5;
+            color: #333;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .metric-table td {
+            text-align: center;
+            padding: 2%;
+        }
+
+        .metric-table .good {
+            background: #e8f5e8;
+            color: #2e7d32;
+            font-weight: 600;
+        }
+
+        .metric-table .bad {
+            background: #ffebee;
+            color: #d32f2f;
+            font-weight: 600;
+        }
+
+        .metric-table .warning {
+            background: #fff8e1;
+            color: #f57c00;
+            font-weight: 600;
+        }
+
+        /* Адаптация для очень маленьких экранов */
+        @media (max-width: 480px) {
+            .btn-group {
+                flex-direction: column;
+                gap: 3%;
+            }
+            
+            .btn {
+                width: 100%;
+                min-width: auto;
+            }
+            
+            th, td {
+                padding: 2%;
+                font-size: 0.8em;
+            }
+            
+            .metric-table {
+                font-size: 0.8em;
+            }
+        }
+
+        /* Для больших экранов */
+        @media (min-width: 1200px) {
+            .container {
+                max-width: 50%;
+            }
+            
+            th, td {
+                padding: 2%;
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Введите код ТТ</h1>
+        
+        <div class="input-group">
+            <input type="text" id="ttCodeInput" placeholder="Введите код торговой точки" onkeypress="handleKeyPress(event)">
+        </div>
+        
+        <div class="btn-group">
+            <button class="btn btn-primary" onclick="searchTT()">Найти ТТ</button>
+            <button class="btn btn-secondary" onclick="loadData()">Обновить данные</button>
+        </div>
+        
+        <div id="status" class="status"></div>
+        <div id="debugInfo" class="debug-info hidden"></div>
+        <div id="resultContainer" class="table-container"></div>
+    </div>
+    
+    <script>
+        // Обновленный источник данных
+        const GOOGLE_SHEETS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTIUKPmhGEtPhbSagzzRTLfDxe6Vu33hw0WWHLpRxD3TBBRtsbIBUDuw2IxOyshVAwHY7zmsFTbrej4/pub?gid=566946366&single=true&output=csv';
+        
+        let csvData = [];
+        let headers = [];
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                searchTT();
+            }
+        }
+
+        function parseCSV(csvText) {
+            const rows = csvText.split('\n').filter(row => row.trim() !== '');
+            if (rows.length < 2) {
+                console.warn('Мало строк в CSV:', rows.length);
+                return { data: [], headers: [] };
+            }
+            
+            // Получаем заголовки из первой строки
+            headers = parseCSVRow(rows[0]);
+            console.log('Заголовки:', headers);
+            
+            const result = [];
+            
+            for (let i = 1; i < rows.length; i++) {
+                const values = parseCSVRow(rows[i]);
+                
+                if (values.length === headers.length) {
+                    const item = {};
+                    headers.forEach((header, index) => {
+                        let value = values[index] || '';
+                        // Убираем кавычки если есть
+                        value = value.replace(/^"(.*)"$/, '$1').trim();
+                        item[header] = value;
+                    });
+                    result.push(item);
+                }
+            }
+            
+            return { data: result, headers: headers };
+        }
+
+        function parseCSVRow(row) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < row.length; i++) {
+                const char = row[i];
+                
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current);
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            
+            result.push(current);
+            return result.map(field => field.trim());
+        }
+
+        function getPerformanceClass(value, isOOS = false) {
+            const num = parseFloat(value);
+            if (isNaN(num)) return '';
+            
+            if (isOOS) {
+                // Для OOS: больше 20.4% - красный, меньше - зеленый
+                return num > 20.4 ? 'bad' : 'good';
+            }
+            
+            // Для остальных показателей: меньше 95% - красный, больше - зеленый
+            return num >= 95 ? 'good' : 'bad';
+        }
+
+        async function loadData() {
+            const status = document.getElementById('status');
+            const debugInfo = document.getElementById('debugInfo');
+            debugInfo.classList.add('hidden');
+            
+            status.innerHTML = '<div class="loading">Загрузка данных из Google Sheets...</div>';
+            
+            try {
+                // Добавляем параметр для обхода кеширования
+                const url = GOOGLE_SHEETS_URL + '&t=' + Date.now();
+                console.log('Загрузка по URL:', url);
+                
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error('Ошибка загрузки: ' + response.status);
+                }
+                
+                const csvText = await response.text();
+                
+                if (!csvText) {
+                    throw new Error('Пустые данные из таблицы');
+                }
+                
+                // Проверяем количество строк
+                const lines = csvText.split('\n').filter(line => line.trim());
+                console.log('Получено строк:', lines.length);
+                
+                if (lines.length <= 1) {
+                    throw new Error('В таблице недостаточно данных');
+                }
+                
+                const parsedData = parseCSV(csvText);
+                csvData = parsedData.data;
+                headers = parsedData.headers;
+
+                status.innerHTML = `<div class="success">Данные загружены! Записей: ${csvData.length}, Колонок: ${headers.length}</div>`;
+                
+                // Убрал вызов debugData() чтобы не показывать информационное окошко
+
+            } catch (error) {
+                console.error('Ошибка загрузки:', error);
+                status.innerHTML = '<div class="error">Ошибка: ' + error.message + '</div>';
+            }
+        }
+
+        function searchTT() {
+            const ttCode = document.getElementById('ttCodeInput').value.trim();
+            const resultContainer = document.getElementById('resultContainer');
+            const debugInfo = document.getElementById('debugInfo');
+            
+            if (!ttCode) {
+                resultContainer.innerHTML = '<div class="error">Введите код ТТ</div>';
+                return;
+            }
+            
+            if (!csvData.length) {
+                resultContainer.innerHTML = '<div class="error">Данные не загружены. Нажмите "Обновить данные"</div>';
+                return;
+            }
+            
+            console.log('Поиск кода:', ttCode);
+            
+            // Ищем ТТ по всем столбцам
+            const foundTT = csvData.find(item => {
+                return Object.values(item).some(value => 
+                    value && value.toString().trim() === ttCode
+                );
+            });
+            
+            if (!foundTT) {
+                resultContainer.innerHTML = '<div class="error">Торговая точка с кодом "' + ttCode + '" не найдена</div>';
+                
+                // Покажем доступные коды для отладки
+                const allCodes = [];
+                csvData.forEach(item => {
+                    Object.values(item).forEach(val => {
+                        if (val && val.toString().trim().length > 0) {
+                            allCodes.push(val.toString().trim());
+                        }
+                    });
+                });
+                
+                const uniqueCodes = [...new Set(allCodes)].slice(0, 10);
+                
+                debugInfo.innerHTML = `
+                    <strong>Доступные коды (первые 10):</strong><br>
+                    ${uniqueCodes.join(', ')}...
+                `;
+                debugInfo.classList.remove('hidden');
+                return;
+            }
+            
+            // Создаем информационную карточку
+            let resultHTML = '<div class="point-info">';
+            resultHTML += '<h4>✅ Найдена торговая точка</h4>';
+            
+            // Блок 1: Информация о ТТ
+            resultHTML += '<div class="section-header">Информация о ТТ</div>';
+            resultHTML += '<table class="metric-table">';
+            
+            const infoFields = [
+                {name: 'Код ТТ', value: ttCode},
+                {name: 'Сеть', value: foundTT['chain_name'] || '—'},
+                {name: 'Адрес', value: foundTT['salesplace_address'] || '—'},
+                {name: 'Тип ТТ', value: foundTT['type_tt'] || '—'},
+                {name: 'Территория', value: foundTT['PlaceID3'] || '—'},
+                {name: 'ФИО ответственного', value: foundTT['Tp_Name2'] || '—'}
+            ];
+            
+            infoFields.forEach(field => {
+                resultHTML += `
+                    <tr>
+                        <td><strong>${field.name}</strong></td>
+                        <td>${field.value}</td>
+                    </tr>
+                `;
+            });
+            
+            resultHTML += '</table>';
+            
+            // Блок 2: SL ЧАЙ
+            resultHTML += '<div class="section-header">SL ЧАЙ</div>';
+            
+            // Таблица 1: Доля полки Чай
+            resultHTML += '<h4>Доля полки Чай</h4>';
+            resultHTML += '<table class="metric-table">';
+            resultHTML += '<tr><th>Показатель</th><th>План</th><th>Факт</th><th>Выполнение</th></tr>';
+            
+            const dpPlanTea = foundTT['План_ДП_ЧАЙ'] || '—';
+            const dpFactTea = foundTT['Факт_ДП_ЧАЙ'] || '—';
+            const dpPerformanceTea = foundTT['Выполнение_ДП_Чай'] || '—';
+            const dpClassTea = getPerformanceClass(dpPerformanceTea);
+            
+            resultHTML += `
+                <tr>
+                    <td>Доля полки</td>
+                    <td>${dpPlanTea}</td>
+                    <td>${dpFactTea}</td>
+                    <td class="${dpClassTea}">${dpPerformanceTea}</td>
+                </tr>
+            `;
+            resultHTML += '</table>';
+            
+            // Таблица 2: Золотая полка Чай
+            resultHTML += '<h4>Золотая полка Чай</h4>';
+            resultHTML += '<table class="metric-table">';
+            resultHTML += '<tr><th>Показатель</th><th>План</th><th>Факт</th><th>Выполнение</th></tr>';
+            
+            const zpPlanTea = foundTT['План_ЗП_ЧАЙ'] || '—';
+            const zpFactTea = foundTT['Факт_ЗП_ЧАЙ'] || '—';
+            const zpPerformanceTea = foundTT['Выполнение_ЗП_Чай'] || '—';
+            const zpClassTea = getPerformanceClass(zpPerformanceTea);
+            
+            resultHTML += `
+                <tr>
+                    <td>Золотая полка</td>
+                    <td>${zpPlanTea}</td>
+                    <td>${zpFactTea}</td>
+                    <td class="${zpClassTea}">${zpPerformanceTea}</td>
+                </tr>
+            `;
+            resultHTML += '</table>';
+            
+            // Таблица 3: % OOS чай - ИСПРАВЛЕННЫЕ ПОЛЯ
+            resultHTML += '<h4>% OOS чай</h4>';
+            resultHTML += '<table class="metric-table">';
+            resultHTML += '<tr><th>Показатель</th><th>План</th><th>Факт</th><th>% OOS в ТТ</th></tr>'; // Изменено название
+            
+            // Исправленные поля согласно требованиям
+            const oosPlanTea = foundTT['План_ЧАЙНЫХ_SKU_Май_Фудс_по_AEP'] || '—';
+            const oosFactTea = foundTT['Фактическое_количество_ЧАЙНЫХ_SKU_Май_Фудс_из_АЕР'] || '—';
+            const oosPerformanceTea = foundTT['SKU_OOS_ЧАЙ_perc'] || '—';
+            const oosClassTea = getPerformanceClass(oosPerformanceTea, true);
+            
+            resultHTML += `
+                <tr>
+                    <td>% OOS чай</td>
+                    <td>${oosPlanTea}</td>
+                    <td>${oosFactTea}</td>
+                    <td class="${oosClassTea}">${oosPerformanceTea}</td>
+                </tr>
+            `;
+            resultHTML += '</table>';
+            
+            // Итог SL Чай - ИСПРАВЛЕННОЕ ПОЛЕ
+            resultHTML += '<h4>Итог SL Чай</h4>';
+            resultHTML += '<table class="metric-table">';
+            resultHTML += '<tr><th>Показатель</th><th>Значение</th></tr>';
+            
+            // Исправленное поле согласно требованию
+            const slTeaValue = foundTT['KPI_Чай_Факт'] || '—';
+            const slTeaClass = getPerformanceClass(slTeaValue);
+            
+            resultHTML += `
+                <tr>
+                    <td>SL Чай</td>
+                    <td class="${slTeaClass}">${slTeaValue}</td>
+                </tr>
+            `;
+            
+            resultHTML += '</table>';
+            
+            // Блок 3: SL КОФЕ
+            resultHTML += '<div class="section-header">SL КОФЕ</div>';
+            
+            // Таблица 1: Доля полки Кофе
+            resultHTML += '<h4>Доля полки Кофе</h4>';
+            resultHTML += '<table class="metric-table">';
+            resultHTML += '<tr><th>Показатель</th><th>План</th><th>Факт</th><th>Выполнение</th></tr>';
+            
+            const dpPlanCoffee = foundTT['План_ДП_Кофе_расчетный'] || '—';
+            const dpFactCoffee = foundTT['Факт_ДП_Кофе'] || '—';
+            const dpPerformanceCoffee = foundTT['Выполнение_ДП_Кофе'] || '—';
+            const dpClassCoffee = getPerformanceClass(dpPerformanceCoffee);
+            
+            resultHTML += `
+                <tr>
+                    <td>Доля полки</td>
+                    <td>${dpPlanCoffee}</td>
+                    <td>${dpFactCoffee}</td>
+                    <td class="${dpClassCoffee}">${dpPerformanceCoffee}</td>
+                </tr>
+            `;
+            resultHTML += '</table>';
+            
+            // Информационная таблица о фейсах кофе
+            resultHTML += '<h4>Информация о фейсах кофе</h4>';
+            resultHTML += '<table class="metric-table">';
+            resultHTML += '<tr><th>Показатель</th><th>Значение</th></tr>';
+            
+            const totalCoffeeFaces = foundTT['Кол_во_фейсов_кофе'] || '—';
+            const coffessoFaces = foundTT['Фактическое_число_фейсов_Coffesso'] || '—';
+            
+            resultHTML += `
+                <tr>
+                    <td>Общее кол-во фейсов Кофе в ТТ</td>
+                    <td>${totalCoffeeFaces}</td>
+                </tr>
+                <tr>
+                    <td>Фактич. кол-во фейсов Coffesso в ТТ</td>
+                    <td>${coffessoFaces}</td>
+                </tr>
+            `;
+            resultHTML += '</table>';
+            
+            // Таблица 2: Золотая полка Кофе
+            resultHTML += '<h4>Золотая полка Кофе</h4>';
+            resultHTML += '<table class="metric-table">';
+            resultHTML += '<tr><th>Показатель</th><th>План</th><th>Факт</th><th>Выполнение</th></tr>';
+            
+            const zpPlanCoffee = foundTT['План_ЗП_Кофе_расчетный'] || '—';
+            const zpFactCoffee = foundTT['Факт_ЗП_Кофе'] || '—';
+            const zpPerformanceCoffee = foundTT['Выполнение_ЗП_Кофе'] || '—';
+            const zpClassCoffee = getPerformanceClass(zpPerformanceCoffee);
+            
+            resultHTML += `
+                <tr>
+                    <td>Золотая полка</td>
+                    <td>${zpPlanCoffee}</td>
+                    <td>${zpFactCoffee}</td>
+                    <td class="${zpClassCoffee}">${zpPerformanceCoffee}</td>
+                </tr>
+            `;
+            resultHTML += '</table>';
+            
+            // Таблица 3: % OOS кофе
+            resultHTML += '<h4>% OOS кофе</h4>';
+            resultHTML += '<table class="metric-table">';
+            resultHTML += '<tr><th>Показатель</th><th>План</th><th>Факт</th><th>% OOS в ТТ</th></tr>'; // Изменено название
+            
+            const oosPlanCoffee = foundTT['Textbox502'] || '—';
+            const oosFactCoffee = foundTT['Textbox503'] || '—';
+            const oosPerformanceCoffee = foundTT['Textbox505'] || '—';
+            const oosClassCoffee = getPerformanceClass(oosPerformanceCoffee, true);
+            
+            resultHTML += `
+                <tr>
+                    <td>% OOS кофе</td>
+                    <td>${oosPlanCoffee}</td>
+                    <td>${oosFactCoffee}</td>
+                    <td class="${oosClassCoffee}">${oosPerformanceCoffee}</td>
+                </tr>
+            `;
+            resultHTML += '</table>';
+            
+            // Таблица 4: Категория кофе
+            resultHTML += '<h4>Категория кофе</h4>';
+            resultHTML += '<table class="metric-table">';
+            resultHTML += '<tr><th>Показатель</th><th>Значение</th><th>Выполнение</th></tr>';
+            
+            const categoryCoffee = foundTT['SKU_молотого_и_порционного_Coffesso_расположены_в_категории_молотого_кофе'] || '—';
+            const categoryPerformanceCoffee = foundTT['Выполнение_Категория_кофе'] || '—';
+            const categoryClassCoffee = getPerformanceClass(categoryPerformanceCoffee);
+            
+            resultHTML += `
+                <tr>
+                    <td>Категория Кофе</td>
+                    <td>${categoryCoffee}</td>
+                    <td class="${categoryClassCoffee}">${categoryPerformanceCoffee}</td>
+                </tr>
+            `;
+            resultHTML += '</table>';
+            
+            // Итог SL Кофе - ИСПРАВЛЕННОЕ ПОЛЕ
+            resultHTML += '<h4>Итог SL Кофе</h4>';
+            resultHTML += '<table class="metric-table">';
+            resultHTML += '<tr><th>Показатель</th><th>Значение</th></tr>';
+            
+            // Исправленное поле согласно требованию
+            const slCoffeeValue = foundTT['KPI_Кофе2'] || '—';
+            const slCoffeeClass = getPerformanceClass(slCoffeeValue);
+            
+            resultHTML += `
+                <tr>
+                    <td>SL Кофе</td>
+                    <td class="${slCoffeeClass}">${slCoffeeValue}</td>
+                </tr>
+            `;
+            
+            resultHTML += '</table>';
+            
+            // Блок 4: ДМП
+            resultHTML += '<div class="section-header">ДМП</div>';
+            resultHTML += '<table class="metric-table">';
+            resultHTML += '<tr><th>Показатель</th><th>Значение</th></tr>';
+            
+            const dmpAvailability = foundTT['наличие_ДМП_в_точке'] || '—';
+            const dmpTime = foundTT['Время_размещения_ДМП'] || '—';
+            const dmpSL = foundTT['Выполнение_ДМП'] || '—';
+            
+            resultHTML += `
+                <tr>
+                    <td>Наличие ДМП</td>
+                    <td>${dmpAvailability}</td>
+                </tr>
+                <tr>
+                    <td>Время размещения ДМП</td>
+                    <td>${dmpTime}</td>
+                </tr>
+                <tr>
+                    <td>% в SL за ДМП</td>
+                    <td>${dmpSL}</td>
+                </tr>
+            `;
+            resultHTML += '</table>';
+            
+            // Блок 5: ИТОГИ SL - ИСПРАВЛЕННОЕ ПОЛЕ
+            resultHTML += '<div class="section-header">ИТОГИ SL</div>';
+            resultHTML += '<table class="metric-table">';
+            resultHTML += '<tr><th>Показатель</th><th>Значение</th></tr>';
+            
+            // Исправленное поле согласно требованию
+            const slTotal = foundTT['KPI_Total'] || '—';
+            const slTotalClass = getPerformanceClass(slTotal);
+            
+            resultHTML += `
+                <tr>
+                    <td>SL общий</td>
+                    <td class="${slTotalClass}">${slTotal}</td>
+                </tr>
+            `;
+            
+            resultHTML += '</table>';
+            
+            resultHTML += '</div>';
+            
+            resultContainer.innerHTML = resultHTML;
+            debugInfo.classList.add('hidden');
+        }
+
+        // Загружаем данные при загрузке страницы
+        document.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+</html>
