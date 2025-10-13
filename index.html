@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Загрузка SL файла</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .container {
+            background: #f5f5f5;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        
+        .btn:hover {
+            background: #0056b3;
+        }
+        
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            margin: 20px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .file-input {
+            margin: 20px 0;
+        }
+        
+        input[type="file"] {
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Загрузка SL файла</h1>
+        <p>Текущий файл: <a href="https://github.com/Mayhelper/mayhelper/raw/refs/heads/main/Sl1025.csv" target="_blank">Sl1025.csv</a></p>
+        
+        <div class="file-input">
+            <input type="file" id="fileInput" accept=".csv">
+        </div>
+        
+        <button class="btn" id="uploadBtn" disabled>Загрузить SL</button>
+        
+        <div id="status" class="status"></div>
+        
+        <div class="info">
+            <p><strong>Инструкция:</strong></p>
+            <p>1. Выберите CSV файл для загрузки</p>
+            <p>2. Нажмите кнопку "Загрузить SL"</p>
+            <p>3. Файл будет заменен в репозитории GitHub</p>
+        </div>
+    </div>
+
+    <script>
+        // Элементы DOM
+        const fileInput = document.getElementById('fileInput');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const statusDiv = document.getElementById('status');
+
+        // GitHub репозиторий информация
+        const repoOwner = 'Mayhelper';
+        const repoName = 'mayhelper';
+        const filePath = 'Sl1025.csv';
+
+        let currentFileSHA = null;
+
+        // Получаем SHA текущего файла при загрузке страницы
+        async function init() {
+            try {
+                const response = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${filePath}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    currentFileSHA = data.sha;
+                    showStatus('Готов к загрузке', 'info');
+                }
+            } catch (error) {
+                showStatus('Не удалось получить информацию о текущем файле', 'error');
+            }
+        }
+
+        // Обработчик выбора файла
+        fileInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                uploadBtn.disabled = false;
+                showStatus('Файл выбран: ' + this.files[0].name, 'info');
+            } else {
+                uploadBtn.disabled = true;
+                clearStatus();
+            }
+        });
+
+        // Обработчик загрузки
+        uploadBtn.addEventListener('click', async function() {
+            const file = fileInput.files[0];
+            if (!file) {
+                showStatus('Пожалуйста, выберите файл', 'error');
+                return;
+            }
+
+            if (!file.name.toLowerCase().endsWith('.csv')) {
+                showStatus('Пожалуйста, выберите CSV файл', 'error');
+                return;
+            }
+
+            await uploadFile(file);
+        });
+
+        // Функция для отображения статуса
+        function showStatus(message, type) {
+            statusDiv.textContent = message;
+            statusDiv.className = 'status ' + type;
+        }
+
+        function clearStatus() {
+            statusDiv.textContent = '';
+            statusDiv.className = 'status';
+        }
+
+        // Функция загрузки файла на GitHub
+        async function uploadFile(file) {
+            try {
+                showStatus('Загрузка файла...', 'info');
+                uploadBtn.disabled = true;
+
+                // Чтение файла как Base64
+                const fileContent = await readFileAsBase64(file);
+
+                // Создаем GitHub Workflow через API
+                const response = await createGitHubWorkflow(fileContent, file.name);
+
+                if (response.ok) {
+                    showStatus('Файл успешно загружен! Обновление займет несколько секунд.', 'success');
+                    // Обновляем SHA после успешной загрузки
+                    setTimeout(() => init(), 3000);
+                } else {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Ошибка загрузки файла');
+                }
+
+            } catch (error) {
+                showStatus('Ошибка: ' + error.message, 'error');
+            } finally {
+                uploadBtn.disabled = false;
+            }
+        }
+
+        // Создание GitHub Workflow для обновления файла
+        async function createGitHubWorkflow(fileContent, fileName) {
+            const workflowData = {
+                event_type: 'update_sl_file',
+                client_payload: {
+                    file_content: fileContent,
+                    file_name: fileName,
+                    file_path: filePath,
+                    current_sha: currentFileSHA
+                }
+            };
+
+            return await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/dispatches`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'token ' + await getGitHubToken(),
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(workflowData)
+            });
+        }
+
+        // Получение GitHub токена (будет работать через GitHub Pages)
+        async function getGitHubToken() {
+            // В реальном приложении это должно быть защищено
+            // Для демонстрации используем прямой запрос
+            return prompt('Введите ваш GitHub Personal Access Token:');
+        }
+
+        // Вспомогательная функция для чтения файла как Base64
+        function readFileAsBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const base64 = reader.result.split(',')[1];
+                    resolve(base64);
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Инициализация при загрузке страницы
+        init();
+    </script>
+</body>
+</html>
