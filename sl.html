@@ -24,6 +24,30 @@
         .container {
             width: 100%;
             padding: 5%;
+            position: relative;
+        }
+        
+        .back-button {
+            position: absolute;
+            top: 5%;
+            left: 5%;
+            padding: 2% 4%;
+            background: linear-gradient(135deg, #ff6b6b, #d32f2f);
+            color: white;
+            border: none;
+            border-radius: 0.5em;
+            font-size: 0.9em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+            z-index: 1000;
+        }
+        
+        .back-button:hover {
+            background: linear-gradient(135deg, #d32f2f, #b71c1c);
+            transform: translateY(-2px);
         }
         
         h1 {
@@ -232,6 +256,13 @@
 
         /* Адаптация для очень маленьких экранов */
         @media (max-width: 480px) {
+            .back-button {
+                padding: 3% 5%;
+                font-size: 0.8em;
+                top: 3%;
+                left: 3%;
+            }
+            
             .btn-group {
                 flex-direction: column;
                 gap: 3%;
@@ -258,6 +289,11 @@
                 max-width: 50%;
             }
             
+            .back-button {
+                padding: 1.5% 3%;
+                font-size: 0.85em;
+            }
+            
             th, td {
                 padding: 2%;
                 font-size: 1em;
@@ -267,6 +303,9 @@
 </head>
 <body>
     <div class="container">
+        <!-- Кнопка назад -->
+        <a href="http://mayhelper.tilda.ws" class="back-button">Назад к MayHelper</a>
+        
         <h1>Введите код ТТ</h1>
         
         <div class="input-group">
