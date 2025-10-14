@@ -66,9 +66,22 @@
             justify-content: center;
         }
         
-        .input-group {
+        .input-section {
             width: 100%;
             margin-bottom: 5%;
+        }
+        
+        .input-label {
+            color: #000;
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 3%;
+            text-align: left;
+            width: 100%;
+        }
+        
+        .input-group {
+            width: 100%;
         }
         
         input {
@@ -78,11 +91,16 @@
             border-radius: 0.5em;
             font-size: 1em;
             background: white;
+            text-transform: uppercase;
         }
         
         input:focus {
             outline: none;
             border-color: #b71c1c;
+        }
+        
+        input::placeholder {
+            text-transform: none;
         }
         
         .btn-group {
@@ -281,6 +299,11 @@
                 align-self: center;
             }
             
+            .input-label {
+                font-size: 1.1em;
+                text-align: center;
+            }
+            
             .btn-group {
                 flex-direction: column;
                 gap: 3%;
@@ -320,16 +343,19 @@
     </style>
 </head>
 <body>
-    <!-- Шапка с кнопкой назад и заголовком -->
+    <!-- Шапка с кнопкой назад -->
     <div class="header">
         <a href="http://mayhelper.tilda.ws" class="back-button">Назад к MayHelper</a>
-        <h1 class="page-title">Введите код ТТ</h1>
         <div style="width: 120px;"></div> <!-- Пустой элемент для выравнивания -->
     </div>
     
     <div class="container">
-        <div class="input-group">
-            <input type="text" id="ttCodeInput" placeholder="Введите код торговой точки" onkeypress="handleKeyPress(event)">
+        <!-- Секция ввода с заголовком над полем -->
+        <div class="input-section">
+            <div class="input-label">Введите код ТТ</div>
+            <div class="input-group">
+                <input type="text" id="ttCodeInput" placeholder="Введите код Торговой Точки (Пример АП00045753)" onkeypress="handleKeyPress(event)" oninput="convertToUpperCase(this)">
+            </div>
         </div>
         
         <div class="btn-group">
@@ -348,6 +374,10 @@
         
         let csvData = [];
         let headers = [];
+
+        function convertToUpperCase(input) {
+            input.value = input.value.toUpperCase();
+        }
 
         function handleKeyPress(event) {
             if (event.key === 'Enter') {
