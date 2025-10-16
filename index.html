@@ -434,6 +434,7 @@
         <div class="header">
             <div class="logo">ЗАГРУЗЧИК SL</div>
             <div class="subtitle">Загрузка фактов полевой команды</div>
+            <button class="btn" id="logoutBtn" style="margin-top:12px; display:none; width:auto; padding:10px 16px; text-transform:none; letter-spacing:0" onclick="logout()">Сменить токен</button>
         </div>
 
         <div class="auth-panel" id="tokenSection">
@@ -562,14 +563,17 @@
         // Инициализация при загрузке страницы
         function init() {
             githubToken = localStorage.getItem('github_token');
-            
+
+            const logoutBtn = document.getElementById('logoutBtn');
             if (githubToken) {
                 document.getElementById('tokenSection').style.display = 'none';
+                if (logoutBtn) logoutBtn.style.display = 'inline-block';
                 showStatus('Система авторизована | Готова к загрузке данных', 'status-success');
             } else {
+                if (logoutBtn) logoutBtn.style.display = 'none';
                 showStatus('Требуется авторизация для доступа к системе', 'status-info');
             }
-            
+
             setupUploaders();
         }
 
@@ -590,6 +594,23 @@
             });
         }
 
+        // Проверка токена GitHub
+        function isValidGitHubToken(token) {
+            if (!token || token.length < 20) return false;
+            const patterns = [
+                /^gh[pousr]_[A-Za-z0-9_]{30,}$/i,  // ghp_, gho_, ghu_, ghs_, ghr_
+                /^github_pat_[A-Za-z0-9_]{80,}$/i, // Fine-grained PAT
+                /^[A-Za-z0-9_\-]{40,}$/           // Достаточно длинный fallback
+            ];
+            return patterns.some(r => r.test(token));
+        }
+
+        function authHeaderValue() {
+            if (!githubToken) return '';
+            const useTokenScheme = /^gh[pousr]_/.test(githubToken) || githubToken.startsWith('github_pat_');
+            return (useTokenScheme ? 'token ' : 'Bearer ') + githubToken;
+        }
+
         // Сохранение токена
         function saveToken() {
             const token = document.getElementById('tokenInput').value.trim();
@@ -597,16 +618,41 @@
                 showStatus('Требуется токен доступа', 'status-error');
                 return;
             }
-            
-            if (!token.startsWith('ghp_')) {
-                showStatus('Неверный формат токена', 'status-error');
+
+            if (!isValidGitHubToken(token)) {
+                showStatus('Неверный формат токена GitHub', 'status-error');
                 return;
             }
-            
+
             localStorage.setItem('github_token', token);
             githubToken = token;
             document.getElementById('tokenSection').style.display = 'none';
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) logoutBtn.style.display = 'inline-block';
             showStatus('✓ Авторизация системы прошла успешно', 'status-success');
+        }
+
+        // Выход (сброс токена)
+        function logout() {
+            localStorage.removeItem('github_token');
+            githubToken = null;
+            currentFileSHAs.sl = null;
+            currentFileSHAs.crit = null;
+
+            Object.keys(fileConfig).forEach(type => {
+                const config = fileConfig[type];
+                const fileInput = document.getElementById(config.fileInputId);
+                const fileInfo = document.getElementById(config.fileInfoId);
+                if (fileInput) fileInput.value = '';
+                if (fileInfo) fileInfo.classList.remove('visible');
+                document.getElementById(config.buttonId).disabled = true;
+                hideProgress(type);
+            });
+
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) logoutBtn.style.display = 'none';
+            document.getElementById('tokenSection').style.display = 'block';
+            showStatus('Авторизация сброшена. Введите новый токен.', 'status-info');
         }
 
         // Форматирование размера файла
@@ -716,7 +762,7 @@
                 if (!currentFileSHAs[type]) {
                     const fileInfoResponse = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${config.filePath}`, {
                         headers: {
-                            'Authorization': `token ${githubToken}`,
+                            'Authorization': authHeaderValue(),
                             'Accept': 'application/vnd.github.v3+json'
                         }
                     });
@@ -737,7 +783,7 @@
                 const response = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${config.filePath}`, {
                     method: 'PUT',
                     headers: {
-                        'Authorization': `token ${githubToken}`,
+                        'Authorization': authHeaderValue(),
                         'Accept': 'application/vnd.github.v3+json',
                         'Content-Type': 'application/json'
                     },
