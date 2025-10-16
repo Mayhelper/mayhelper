@@ -435,8 +435,15 @@
             return result.map(field => field.trim());
         }
 
+        function normalizePercent(value) {
+            if (value == null) return NaN;
+            const str = String(value).replace('%', '').replace(',', '.').trim();
+            const n = parseFloat(str);
+            return isNaN(n) ? NaN : n;
+        }
+
         function getPerformanceClass(value, isOOS = false) {
-            const num = parseFloat(value);
+            const num = normalizePercent(value);
             if (isNaN(num)) return '';
             
             if (isOOS) {
@@ -486,14 +493,15 @@
         }
 
         function searchTT() {
-            const ttCode = document.getElementById('ttCodeInput').value.trim();
+            const ttCodeRaw = document.getElementById('ttCodeInput').value.trim();
             const resultContainer = document.getElementById('resultContainer');
             const debugInfo = document.getElementById('debugInfo');
             
-            if (!ttCode) {
+            if (!ttCodeRaw) {
                 resultContainer.innerHTML = '<div class="error">Введите код ТТ</div>';
                 return;
             }
+            const ttCode = ttCodeRaw.toUpperCase();
             
             if (!csvData.length) {
                 resultContainer.innerHTML = '<div class="error">Данные не загружены. Нажмите "Обновить данные"</div>';
@@ -502,9 +510,11 @@
             
             // Ищем ТТ по всем столбцам
             const foundTT = csvData.find(item => {
-                return Object.values(item).some(value => 
-                    value && value.toString().trim() === ttCode
-                );
+                return Object.values(item).some(value => {
+                    if (value == null) return false;
+                    const v = value.toString().trim().toUpperCase();
+                    return v === ttCode;
+                });
             });
             
             if (!foundTT) {
